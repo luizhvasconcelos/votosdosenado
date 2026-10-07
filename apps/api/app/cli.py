@@ -1,9 +1,10 @@
 import argparse
+from pathlib import Path
 
 from .database import Base, SessionLocal, engine
 from .ingestion import ingest_affiliations, ingest_senators, ingest_votes
 from .metrics import refresh_snapshots
-from .tse import ingest_tse_elections
+from .tse import ingest_tse_elections, sync_tse_elected_photos
 
 
 def main() -> None:
@@ -15,7 +16,8 @@ def main() -> None:
     ingest.add_argument("--profiles", action="store_true")
     subparsers.add_parser("metrics")
     elections = subparsers.add_parser("elections")
-    elections.add_argument("--years", nargs="+", type=int, default=[2018, 2022])
+    elections.add_argument("--years", nargs="+", type=int, default=[2018, 2022, 2026])
+    elections.add_argument("--photos-dir", type=Path)
     args = parser.parse_args()
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as session:
@@ -34,6 +36,11 @@ def main() -> None:
         elif args.command == "elections":
             for year, count in ingest_tse_elections(session, tuple(args.years)).items():
                 print(f"Resultados eleitorais {year}: {count}")
+                if args.photos_dir:
+                    print(
+                        f"Fotos eleitorais {year}: "
+                        f"{sync_tse_elected_photos(session, year, args.photos_dir / str(year))}"
+                    )
 
 
 if __name__ == "__main__":

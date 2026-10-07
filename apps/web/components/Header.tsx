@@ -8,6 +8,7 @@ export function Header() {
         <Brand />
         <nav aria-label="Navegação principal">
           <Link href="/">Plenário</Link>
+          <Link href="/senadores">Senadores</Link>
           <Link href="/votacoes">Votações</Link>
           <Link href="/materias">Matérias</Link>
           <Link href="/temas">Temas</Link>

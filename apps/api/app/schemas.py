@@ -48,6 +48,7 @@ class SenatorSummary(ORMModel):
     espectro_partido: str
     espectro_comportamento: str | None
     ativo: bool
+    eleicoes: list[ElectionOut] = Field(default_factory=list)
 
 
 class VoteSummary(ORMModel):
@@ -78,7 +79,6 @@ class SenatorDetail(SenatorSummary):
     votos_recentes: list[SenatorVoteOut] = Field(default_factory=list)
     mandatos: list[MandateOut] = Field(default_factory=list)
     filiacoes: list[AffiliationOut] = Field(default_factory=list)
-    eleicoes: list[ElectionOut] = Field(default_factory=list)
 
 
 class MatterSummary(ORMModel):

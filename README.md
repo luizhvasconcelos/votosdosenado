@@ -46,7 +46,7 @@ O workflow `Atualização de dados` agenda uma carga diária e cargas horárias 
 make setup       # instala Python e Node
 make db-up       # inicia PostgreSQL
 make ingest      # carrega Senado e recalcula índices
-make ingest-elections # carga única dos resultados TSE de 2018 e 2022
+make ingest-elections # resultados TSE de 2018, 2022 e 2026 + fotos dos eleitos
 make test        # testes das duas aplicações
 make lint        # Ruff + ESLint
 make dev         # API e site em modo desenvolvimento

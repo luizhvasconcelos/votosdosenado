@@ -3,7 +3,7 @@ from sqlalchemy import desc, func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from .database import get_db
-from .models import Matter, Senator, Vote, Voting
+from .models import ElectionResult, Matter, Senator, Vote, Voting
 from .schemas import (
     MatterDetail,
     MatterSummary,
@@ -36,6 +36,7 @@ def senators(
 ):
     query = (
         select(Senator)
+        .options(selectinload(Senator.eleicoes))
         .where(Senator.ativo.is_(True))
         .order_by(Senator.uf, Senator.nome_parlamentar)
     )
@@ -52,6 +53,22 @@ def senators(
     if busca:
         query = query.where(Senator.nome_parlamentar.ilike(f"%{busca}%"))
     return db.scalars(query).all()
+
+
+@router.get("/senadores/composicao/{year}", response_model=list[SenatorSummary])
+def senators_by_composition(year: int, db: Session = Depends(get_db)):
+    if year != 2027:
+        raise HTTPException(404, "Composição não disponível")
+    return db.scalars(
+        select(Senator)
+        .join(ElectionResult)
+        .options(selectinload(Senator.eleicoes))
+        .where(
+            ElectionResult.ano.in_((2022, 2026)),
+            ElectionResult.eleito.is_(True),
+        )
+        .order_by(Senator.uf, Senator.nome_parlamentar)
+    ).unique().all()
 
 
 @router.get("/senadores/{senator_id}", response_model=SenatorDetail)

@@ -15,7 +15,7 @@ ingest:
 	cd apps/api && ../../.venv/bin/python -m app.cli ingest --senators --votes --profiles
 
 ingest-elections:
-	cd apps/api && ../../.venv/bin/python -m app.cli elections --years 2018 2022
+	cd apps/api && ../../.venv/bin/python -m app.cli elections --years 2018 2022 2026 --photos-dir ../web/public/candidatos
 
 api:
 	cd apps/api && ../../.venv/bin/uvicorn app.main:app --reload --port 8000

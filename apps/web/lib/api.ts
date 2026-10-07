@@ -13,6 +13,7 @@ async function api<T>(path: string, fallback: T): Promise<T> {
 }
 
 export const getSenators = () => api<Senator[]>("/senadores", []);
+export const getFutureSenators = () => api<Senator[]>("/senadores/composicao/2027", []);
 export const getSenator = (id: string) => api<Senator | null>(`/senadores/${id}`, null);
 export const getVotings = (limit = 30) => api<Voting[]>(`/votacoes?limit=${limit}`, []);
 export const getVoting = (id: string) => api<Voting | null>(`/votacoes/${id}`, null);

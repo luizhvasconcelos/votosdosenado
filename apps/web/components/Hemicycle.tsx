@@ -17,6 +17,10 @@ interface HoveredSeat {
   category?: VoteCategory;
 }
 
+function latestElection(senator: Senator) {
+  return [...(senator.eleicoes || [])].sort((a, b) => b.ano - a.ano)[0];
+}
+
 function tooltipTransform(x: number, y: number): string {
   const horizontal = x < 135 ? "0%" : x > 505 ? "-100%" : "-50%";
   return `translate(${horizontal}, ${y < 115 ? "18%" : "-116%"})`;
@@ -104,11 +108,12 @@ export function Hemicycle({ senators, voting }: { senators: Senator[]; voting?: 
               const baseColor = colorMode === "espectro"
                 ? spectrumColors[spectrumOf(senator)] : partyColor(senator.partido_sigla);
               const isVisible = visibleIds.has(senator.id);
+              const election = latestElection(senator);
               return (
                 <Link
                   key={senator.id}
                   href={`/senadores/${senator.id}`}
-                  aria-label={`${senator.nome_parlamentar}, ${senator.partido_sigla}-${senator.uf}, ${spectrumLabels[spectrumOf(senator)]}${category ? `, voto ${voteLabels[category]}` : ""}`}
+                  aria-label={`${senator.nome_parlamentar}, ${senator.partido_sigla}-${senator.uf}, ${spectrumLabels[spectrumOf(senator)]}${election ? `, ${election.votos.toLocaleString("pt-BR")} votos em ${election.ano}` : ""}${category ? `, voto ${voteLabels[category]}` : ""}`}
                   onMouseEnter={() => showTooltip({ senator, x, y, category })}
                   onMouseLeave={() => setHovered(null)}
                   onFocus={() => showTooltip({ senator, x, y, category })}
@@ -139,6 +144,7 @@ export function Hemicycle({ senators, voting }: { senators: Senator[]; voting?: 
               <div>
                 <strong>{hovered.senator.nome_parlamentar}</strong>
                 <span>{hovered.senator.partido_sigla} · {hovered.senator.uf}</span>
+                {latestElection(hovered.senator) && <small className="tooltip-election">{latestElection(hovered.senator)?.votos.toLocaleString("pt-BR")} votos · eleição {latestElection(hovered.senator)?.ano}</small>}
                 {hovered.category && <small><i style={{ background: voteColors[hovered.category] }} /> Votou {voteLabels[hovered.category]}</small>}
               </div>
             </div>
