@@ -1,0 +1,20 @@
+name: Atualização de dados
+on:
+  schedule:
+    - cron: "17 8 * * *"
+    - cron: "17 13-23 * * 2-4"
+  workflow_dispatch:
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install -e apps/api
+      - name: Importar fontes oficiais e recalcular índices
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        working-directory: apps/api
+        run: python -m app.cli ingest --senators --votes --profiles
