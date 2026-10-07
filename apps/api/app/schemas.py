@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -182,3 +183,57 @@ class VotingDetail(VotingSummary):
 
 class MatterDetail(MatterSummary):
     votacoes: list[VotingSummary]
+
+
+class CommentCreate(BaseModel):
+    autor_nome: str = Field(min_length=2, max_length=60)
+    corpo: str = Field(min_length=2, max_length=1200)
+    visitor_id: str = Field(pattern=r"^[a-zA-Z0-9-]{12,64}$")
+    parent_id: int | None = None
+
+
+class ReactionCreate(BaseModel):
+    visitor_id: str = Field(pattern=r"^[a-zA-Z0-9-]{12,64}$")
+    tipo: Literal["curtir", "aprovar", "desaprovar"]
+
+
+class ReactionSummary(BaseModel):
+    curtir: int = 0
+    aprovar: int = 0
+    desaprovar: int = 0
+
+
+class CommentOut(BaseModel):
+    id: int
+    autor_nome: str
+    corpo: str
+    criado_em: datetime
+    parent_id: int | None
+    reacoes: ReactionSummary
+    reacoes_visitante: list[str] = Field(default_factory=list)
+    respostas: list["CommentOut"] = Field(default_factory=list)
+
+
+class ThemeSummaryOut(BaseModel):
+    slug: str
+    nome: str
+    resumo: str
+    materias: int
+    votacoes: int
+
+
+class ThemeVoteTotals(BaseModel):
+    sim: int
+    nao: int
+    abstencoes: int
+    total: int
+
+
+class ThemedMatterOut(MatterSummary):
+    origem_tema: str
+    votacoes: list[VotingSummary] = Field(default_factory=list)
+
+
+class ThemeDetailOut(ThemeSummaryOut):
+    totais: ThemeVoteTotals
+    materias_relacionadas: list[ThemedMatterOut] = Field(default_factory=list)

@@ -6,6 +6,7 @@ from .database import Base, SessionLocal, engine
 from .ingestion import ingest_affiliations, ingest_senators, ingest_votes
 from .metrics import refresh_snapshots
 from .tse import ingest_tse_elections, sync_tse_elected_photos
+from .themes import sync_themes
 
 
 def main() -> None:
@@ -16,6 +17,7 @@ def main() -> None:
     ingest.add_argument("--votes", action="store_true")
     ingest.add_argument("--profiles", action="store_true")
     ingest.add_argument("--activities", action="store_true")
+    ingest.add_argument("--themes", action="store_true")
     subparsers.add_parser("metrics")
     elections = subparsers.add_parser("elections")
     elections.add_argument("--years", nargs="+", type=int, default=[2018, 2022, 2026])
@@ -24,8 +26,8 @@ def main() -> None:
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as session:
         if args.command == "ingest":
-            do_all = (
-                not args.senators and not args.votes and not args.profiles and not args.activities
+            do_all = not any(
+                (args.senators, args.votes, args.profiles, args.activities, args.themes)
             )
             if args.senators or do_all:
                 print(f"Senadores importados: {ingest_senators(session)}")
@@ -36,6 +38,8 @@ def main() -> None:
                 print(f"Filiações importadas: {ingest_affiliations(session)}")
             if args.activities or do_all:
                 print(f"Perfis de atividade importados: {ingest_legislative_activities(session)}")
+            if args.themes or args.votes or do_all:
+                print(f"Relações temáticas atualizadas: {sync_themes(session)}")
             print(f"Índices atualizados: {refresh_snapshots(session)}")
         elif args.command == "metrics":
             print(f"Índices atualizados: {refresh_snapshots(session)}")

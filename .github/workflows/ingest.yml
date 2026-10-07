@@ -17,4 +17,4 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         working-directory: apps/api
-        run: python -m app.cli ingest --senators --votes --profiles --activities
+        run: python -m app.cli ingest --senators --votes --profiles --activities --themes

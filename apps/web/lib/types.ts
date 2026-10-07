@@ -121,3 +121,38 @@ export interface SenatorVote {
   materia_id: number | null;
   materia_identificacao: string | null;
 }
+
+export interface CommentReactionSummary {
+  curtir: number;
+  aprovar: number;
+  desaprovar: number;
+}
+
+export interface CommunityComment {
+  id: number;
+  autor_nome: string;
+  corpo: string;
+  criado_em: string;
+  parent_id: number | null;
+  reacoes: CommentReactionSummary;
+  reacoes_visitante: Array<"curtir" | "aprovar" | "desaprovar">;
+  respostas: CommunityComment[];
+}
+
+export interface ThemeSummary {
+  slug: string;
+  nome: string;
+  resumo: string;
+  materias: number;
+  votacoes: number;
+}
+
+export interface ThemedMatter extends Matter {
+  origem_tema: string;
+  votacoes: Voting[];
+}
+
+export interface ThemeDetail extends ThemeSummary {
+  totais: { sim: number; nao: number; abstencoes: number; total: number };
+  materias_relacionadas: ThemedMatter[];
+}

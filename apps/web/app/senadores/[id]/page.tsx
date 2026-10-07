@@ -5,9 +5,10 @@ import { ArrowLeft, Envelope, Phone } from "@phosphor-icons/react/dist/ssr";
 import { LayerBadge } from "@/components/LayerBadge";
 import { MetricCard } from "@/components/MetricCard";
 import { AlignmentChart } from "@/components/AlignmentChart";
+import { CommentSection } from "@/components/CommentSection";
 import { ParliamentaryActivity } from "@/components/ParliamentaryActivity";
 import { VoteTimeline } from "@/components/VoteTimeline";
-import { getSenator } from "@/lib/api";
+import { getComments, getSenator } from "@/lib/api";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -16,7 +17,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function SenatorPage({ params }: { params: Promise<{ id: string }> }) {
-  const senator = await getSenator((await params).id);
+  const { id } = await params;
+  const [senator, comments] = await Promise.all([getSenator(id), getComments("senador", id)]);
   if (!senator) notFound();
   const metrics = Object.fromEntries((senator.indices || []).map(i => [i.tipo, i]));
   const elections = [...(senator.eleicoes || [])].sort((a, b) => b.ano - a.ano);
@@ -31,5 +33,6 @@ export default async function SenatorPage({ params }: { params: Promise<{ id: st
     <section className="activity-section"><div className="section-heading"><div><LayerBadge type="fato" /><h2>Atuação parlamentar</h2><p>Participação, projetos, relatorias, pronunciamentos e comissões no mandato atual.</p>{senator.atividade?.data_ref && <small className="data-reference">Dados oficiais atualizados em {new Date(`${senator.atividade.data_ref}T12:00:00`).toLocaleDateString("pt-BR")}{senator.atividade.periodo_inicio ? ` · período desde ${new Date(`${senator.atividade.periodo_inicio}T12:00:00`).toLocaleDateString("pt-BR")}` : ""}</small>}</div></div><ParliamentaryActivity activity={senator.atividade} participation={senator.participacao} /></section>
     <section><div className="section-heading"><div><LayerBadge type="fato" /><h2>Votos recentes</h2><p>Os 30 registros mais recentes disponíveis para este parlamentar.</p></div></div><VoteTimeline votes={senator.votos_recentes || []} /></section>
     <section className="history-section"><div className="section-heading"><div><LayerBadge type="fato" /><h2>Histórico partidário</h2></div></div><div className="history-list">{(senator.filiacoes || []).map(f => <div key={`${f.partido_sigla}-${f.inicio}`}><strong>{f.partido_sigla}</strong><span>{new Date(`${f.inicio}T12:00:00`).toLocaleDateString("pt-BR")} — {f.fim ? new Date(`${f.fim}T12:00:00`).toLocaleDateString("pt-BR") : "atual"}</span></div>)}{!senator.filiacoes?.length && <p className="empty-inline">Histórico ainda não importado.</p>}</div></section>
+    <CommentSection target="senador" targetId={senator.id} initialComments={comments} />
   </div>;
 }

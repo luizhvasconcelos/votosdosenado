@@ -1,4 +1,4 @@
-import type { Matter, Senator, Voting } from "./types";
+import type { CommunityComment, Matter, Senator, ThemeDetail, ThemeSummary, Voting } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
@@ -22,3 +22,6 @@ export const getVotings = (limit = 30) => api<Voting[]>(`/votacoes?limit=${limit
 export const getVoting = (id: string) => api<Voting | null>(`/votacoes/${id}`, null);
 export const getMatters = (limit = 30) => api<Matter[]>(`/materias?limit=${limit}`, []);
 export const getMatter = (id: string) => api<Matter | null>(`/materias/${id}`, null);
+export const getComments = (target: "senador" | "votacao", id: string) => api<CommunityComment[]>(`/comentarios/${target}/${id}`, [], 0);
+export const getThemes = () => api<ThemeSummary[]>("/temas", []);
+export const getTheme = (slug: string) => api<ThemeDetail | null>(`/temas/${slug}`, null);

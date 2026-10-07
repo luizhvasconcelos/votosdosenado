@@ -35,8 +35,11 @@ O importador é idempotente e consome:
 
 - `GET /dadosabertos/senador/lista/atual`
 - `GET /dadosabertos/votacao`
+- endpoints oficiais de autorias, relatorias, discursos, apartes e comissões
 
 Totais ausentes são recalculados a partir de `votos[]`. A sigla original é preservada e uma categoria canônica é gravada separadamente.
+
+O site também mantém uma camada comunitária local para comentários, respostas e reações. Ela é armazenada separadamente dos dados oficiais. A classificação temática automática usa palavras-chave versionadas sobre a ementa e identifica sua origem em cada matéria.
 
 O workflow `Atualização de dados` agenda uma carga diária e cargas horárias nos dias usuais de sessão. Falhas ficam visíveis nas notificações do repositório. No ambiente puramente local, o mesmo processo é executado por `make ingest`.
 

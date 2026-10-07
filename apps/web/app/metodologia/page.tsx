@@ -37,6 +37,13 @@ export default function MethodologyPage() {
     <h2>Espectro político</h2>
     <p>A primeira classificação vem do partido. Após histórico suficiente, uma classificação comportamental pode ser calculada e exibida lado a lado. Ela não apaga o rótulo partidário.</p>
 
+    <h2>Classificação por temas</h2>
+    <p>A associação inicial procura termos públicos e reproduzíveis na ementa oficial de cada matéria. Uma mesma matéria pode aparecer em mais de um tema. A indicação “classificação automática” permanece visível para não confundir essa associação com um assunto oficial atribuído pelo Senado ou com revisão editorial.</p>
+    <p>Os gráficos temáticos somam votos individuais Sim, Não e Abstenção das votações relacionadas. Eles mostram o volume agregado de votos registrados — não representam uma posição única do Senado sobre todo o tema.</p>
+
+    <h2>Comentários e reações</h2>
+    <p>Comentários, respostas, curtidas, aprovações e desaprovações formam uma camada comunitária separada. Eles não alteram dados oficiais, métricas ou classificações. Nesta fase local, a identidade anônima do navegador limita reações repetidas, mas ainda não substitui autenticação de usuário e ferramentas completas de moderação.</p>
+
     <h2>Limites da cobertura</h2>
     <p>A maioria das votações do Senado é simbólica e não registra votos individuais. Essas votações são explicitamente marcadas como “sem registro individual”. Em votações secretas, mostramos apenas que o parlamentar votou, nunca inferimos o conteúdo do voto.</p>
   </article>;

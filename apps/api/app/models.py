@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 from sqlalchemy import (
@@ -170,6 +170,37 @@ class Vote(Base):
 
     votacao: Mapped[Voting] = relationship(back_populates="votos")
     senador: Mapped[Senator] = relationship(back_populates="votos")
+
+
+class Comment(Base):
+    __tablename__ = "comentario"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    alvo_tipo: Mapped[str] = mapped_column(String(20), index=True)
+    alvo_id: Mapped[int] = mapped_column(Integer, index=True)
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("comentario.id"), index=True)
+    autor_nome: Mapped[str] = mapped_column(String(60))
+    corpo: Mapped[str] = mapped_column(Text)
+    visitor_id: Mapped[str] = mapped_column(String(64), index=True)
+    status: Mapped[str] = mapped_column(String(20), default="publicado", index=True)
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(UTC).replace(tzinfo=None), index=True
+    )
+
+
+class CommentReaction(Base):
+    __tablename__ = "comentario_reacao"
+    __table_args__ = (UniqueConstraint("comentario_id", "visitor_id", "tipo"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    comentario_id: Mapped[int] = mapped_column(
+        ForeignKey("comentario.id", ondelete="CASCADE"), index=True
+    )
+    visitor_id: Mapped[str] = mapped_column(String(64), index=True)
+    tipo: Mapped[str] = mapped_column(String(20), index=True)
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(UTC).replace(tzinfo=None)
+    )
 
 
 class IndexSnapshot(Base):
