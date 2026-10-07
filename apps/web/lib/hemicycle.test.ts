@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getVoteBreakdowns, orderSenators, seatPositions } from "./hemicycle";
+import { compareText, getVoteBreakdowns, orderSenators, seatPositions } from "./hemicycle";
 import type { Senator, Voting } from "./types";
 
 function senator(id: number, name: string, spectrum: Senator["espectro_partido"], party: string): Senator {
@@ -19,11 +19,16 @@ describe("hemicycle grouping", () => {
     expect(orderSenators([right, left, center]).map(item => item.id)).toEqual([1, 2, 3]);
   });
 
+  it("uses a deterministic text order independent of server locale", () => {
+    expect(["União", "Ágata", "Brasil"].sort(compareText)).toEqual(["Ágata", "Brasil", "União"]);
+  });
+
   it("keeps all 81 seats inside the canvas without overlaps", () => {
     expect(seatPositions).toHaveLength(81);
     for (let first = 0; first < seatPositions.length; first += 1) {
       expect(seatPositions[first].x).toBeGreaterThanOrEqual(25);
       expect(seatPositions[first].x).toBeLessThanOrEqual(615);
+      expect(String(seatPositions[first].x).split(".")[1]?.length || 0).toBeLessThanOrEqual(6);
       for (let second = first + 1; second < seatPositions.length; second += 1) {
         const distance = Math.hypot(
           seatPositions[first].x - seatPositions[second].x,

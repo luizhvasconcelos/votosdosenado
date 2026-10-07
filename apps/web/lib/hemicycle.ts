@@ -44,12 +44,19 @@ export function spectrumOf(senator: Senator): Spectrum {
   return senator.espectro_comportamento || senator.espectro_partido;
 }
 
+export function compareText(a: string, b: string): number {
+  const left = a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+  const right = b.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 export function orderSenators(senators: Senator[]): Senator[] {
   const order: Record<Spectrum, number> = { esquerda: 0, centro: 1, direita: 2 };
   return [...senators].sort((a, b) =>
     order[spectrumOf(a)] - order[spectrumOf(b)] ||
-    a.partido_sigla.localeCompare(b.partido_sigla, "pt-BR") ||
-    a.nome_parlamentar.localeCompare(b.nome_parlamentar, "pt-BR")
+    compareText(a.partido_sigla, b.partido_sigla) ||
+    compareText(a.nome_parlamentar, b.nome_parlamentar) ||
+    a.id - b.id
   );
 }
 
@@ -67,13 +74,18 @@ function buildSeatPositions(): SeatPosition[] {
   const end = Math.PI * 2 - Math.PI / 12;
   const positions = rows.flatMap((count, row) => Array.from({ length: count }, (_, index) => {
     const angle = start + (index / (count - 1)) * (end - start);
+    const round = (value: number) => Math.round(value * 1_000_000) / 1_000_000;
     return {
-      x: centerX + Math.cos(angle) * radii[row],
-      y: centerY + Math.sin(angle) * radii[row],
-      rotation: angle * 180 / Math.PI + 90
+      x: round(centerX + Math.cos(angle) * radii[row]),
+      y: round(centerY + Math.sin(angle) * radii[row]),
+      rotation: round(angle * 180 / Math.PI + 90),
+      order: index / (count - 1),
+      row
     };
   }));
-  return positions.sort((a, b) => Math.atan2(a.y - centerY, a.x - centerX) - Math.atan2(b.y - centerY, b.x - centerX) || a.x - b.x);
+  return positions
+    .sort((a, b) => a.order - b.order || a.row - b.row)
+    .map(({ x, y, rotation }) => ({ x, y, rotation }));
 }
 
 export const seatPositions = buildSeatPositions();
@@ -114,5 +126,5 @@ export function getVoteBreakdowns(
     };
   }).filter(group => group.total > 0).sort((a, b) => mode === "espectro"
     ? spectrumOrder[a.key] - spectrumOrder[b.key]
-    : a.label.localeCompare(b.label, "pt-BR"));
+    : compareText(a.label, b.label));
 }
