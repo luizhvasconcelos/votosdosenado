@@ -43,6 +43,9 @@ class Senator(Base):
     mandatos: Mapped[list["Mandate"]] = relationship(back_populates="senador")
     filiacoes: Mapped[list["Affiliation"]] = relationship(back_populates="senador")
     eleicoes: Mapped[list["ElectionResult"]] = relationship(back_populates="senador")
+    atividade: Mapped["LegislativeActivity | None"] = relationship(
+        back_populates="senador", uselist=False
+    )
 
 
 class Mandate(Base):
@@ -88,6 +91,28 @@ class ElectionResult(Base):
     eleito: Mapped[bool] = mapped_column(Boolean)
 
     senador: Mapped[Senator] = relationship(back_populates="eleicoes")
+
+
+class LegislativeActivity(Base):
+    __tablename__ = "atividade_legislativa"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    senador_id: Mapped[int] = mapped_column(ForeignKey("senador.id"), unique=True, index=True)
+    data_ref: Mapped[date] = mapped_column(Date, index=True)
+    periodo_inicio: Mapped[date | None] = mapped_column(Date)
+    autorias_total: Mapped[int] = mapped_column(Integer, default=0)
+    projetos_autoria: Mapped[int] = mapped_column(Integer, default=0)
+    autorias_principais: Mapped[int] = mapped_column(Integer, default=0)
+    relatorias: Mapped[int] = mapped_column(Integer, default=0)
+    discursos: Mapped[int] = mapped_column(Integer, default=0)
+    apartes: Mapped[int] = mapped_column(Integer, default=0)
+    comissoes_ativas: Mapped[int] = mapped_column(Integer, default=0)
+    autorias_recentes: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    relatorias_recentes: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    discursos_recentes: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    comissoes: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+
+    senador: Mapped[Senator] = relationship(back_populates="atividade")
 
 
 class Party(Base):

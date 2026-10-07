@@ -24,14 +24,41 @@ TSE_URL = (
     "votacao_candidato_munzona/votacao_candidato_munzona_{year}.zip"
 )
 TSE_2026_RESULT_URL = (
-    "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/"
-    "{uf}/{uf}-c0005-e006259-u.json"
+    "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/{uf}/{uf}-c0005-e006259-u.json"
 )
 TSE_PHOTO_URL = (
     "https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes{year}/fotos/"
     "foto_cand{year}_{uf}_div.zip"
 )
-UFS = ("AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO")
+UFS = (
+    "AC",
+    "AL",
+    "AP",
+    "AM",
+    "BA",
+    "CE",
+    "DF",
+    "ES",
+    "GO",
+    "MA",
+    "MT",
+    "MS",
+    "MG",
+    "PA",
+    "PB",
+    "PR",
+    "PE",
+    "PI",
+    "RJ",
+    "RN",
+    "RS",
+    "RO",
+    "RR",
+    "SC",
+    "SP",
+    "SE",
+    "TO",
+)
 
 
 def _normalized(value: str | None) -> str:
@@ -60,8 +87,7 @@ def _aggregate(archive: Path) -> dict[tuple[str, str], dict[str, object]]:
         if not csv_files:
             return candidates
         state_files = [
-            name for name in csv_files
-            if Path(name).stem.rsplit("_", 1)[-1].upper() in UFS
+            name for name in csv_files if Path(name).stem.rsplit("_", 1)[-1].upper() in UFS
         ] or csv_files
         with zipped.open(state_files[0]) as first:
             header = next(csv.reader([first.readline().decode("latin-1")], delimiter=";"))
@@ -78,9 +104,7 @@ def _aggregate(archive: Path) -> dict[tuple[str, str], dict[str, object]]:
         "SG_PARTIDO",
     )
     indexes = {column: header.index(column) for column in required}
-    unzip = subprocess.Popen(
-        ["unzip", "-p", str(archive), *state_files], stdout=subprocess.PIPE
-    )
+    unzip = subprocess.Popen(["unzip", "-p", str(archive), *state_files], stdout=subprocess.PIPE)
     grep = subprocess.Popen(
         ["grep", "-a", "-i", "SENADOR"],
         stdin=unzip.stdout,
@@ -140,8 +164,12 @@ def _match_senator(senators: list[Senator], candidate: dict[str, object]) -> Sen
 
 
 def _upsert_election_result(
-    session: Session, senators: list[Senator], candidate: dict[str, object], year: int,
-    position: int, valid_votes: int,
+    session: Session,
+    senators: list[Senator],
+    candidate: dict[str, object],
+    year: int,
+    position: int,
+    valid_votes: int,
 ) -> bool:
     elected = _is_elected_status(str(candidate["status"]))
     senator = _match_senator(senators, candidate)
@@ -207,15 +235,17 @@ def _live_2026_candidates(payload: dict[str, object], uf: str) -> list[dict[str,
         for group in cargo.get("agr", []):
             for party in group.get("par", []):
                 for candidate in party.get("cand", []):
-                    result.append({
-                        "uf": uf,
-                        "name": candidate.get("nmu") or candidate.get("nm") or "Sem nome",
-                        "civil_name": candidate.get("nm") or candidate.get("nmu") or "Sem nome",
-                        "votes": int(candidate.get("vap") or 0),
-                        "status": candidate.get("st") or "Não eleito",
-                        "candidate_id": str(candidate.get("sqcand") or ""),
-                        "party": party.get("sg") or "SEM PARTIDO",
-                    })
+                    result.append(
+                        {
+                            "uf": uf,
+                            "name": candidate.get("nmu") or candidate.get("nm") or "Sem nome",
+                            "civil_name": candidate.get("nm") or candidate.get("nmu") or "Sem nome",
+                            "votes": int(candidate.get("vap") or 0),
+                            "status": candidate.get("st") or "Não eleito",
+                            "candidate_id": str(candidate.get("sqcand") or ""),
+                            "party": party.get("sg") or "SEM PARTIDO",
+                        }
+                    )
     return result
 
 
@@ -226,9 +256,11 @@ def ingest_tse_2026_results(
     imported = 0
     with httpx.Client(timeout=60, follow_redirects=True) as client:
         for uf in UFS:
-            payload = payloads.get(uf) if payloads else client.get(
-                TSE_2026_RESULT_URL.format(uf=uf.lower())
-            ).raise_for_status().json()
+            payload = (
+                payloads.get(uf)
+                if payloads
+                else client.get(TSE_2026_RESULT_URL.format(uf=uf.lower())).raise_for_status().json()
+            )
             candidates = _live_2026_candidates(payload or {}, uf)
             valid_votes = sum(int(item["votes"]) for item in candidates)
             ranked = sorted(candidates, key=lambda item: int(item["votes"]), reverse=True)
@@ -241,9 +273,7 @@ def ingest_tse_2026_results(
     return imported
 
 
-def sync_tse_elected_photos(
-    session: Session, year: int, output_dir: Path
-) -> int:
+def sync_tse_elected_photos(session: Session, year: int, output_dir: Path) -> int:
     elected = session.scalars(
         select(Senator)
         .join(ElectionResult)

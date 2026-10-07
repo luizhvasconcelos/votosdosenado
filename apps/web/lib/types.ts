@@ -23,6 +23,65 @@ export interface Senator {
   mandatos?: Array<{ legislatura: string; inicio: string; fim: string; tipo: string; participacao: string | null }>;
   filiacoes?: Array<{ partido_sigla: string; inicio: string; fim: string | null }>;
   eleicoes?: Array<{ ano: number; uf: string; votos: number; pct_validos: number | null; posicao: number | null; eleito: boolean }>;
+  participacao?: Participation | null;
+  alinhamentos?: AlignmentGroup[];
+  atividade?: LegislativeActivity | null;
+}
+
+export interface Participation {
+  total: number;
+  presencas: number;
+  sim: number;
+  nao: number;
+  abstencoes: number;
+  obstrucoes: number;
+  ausencias: number;
+  licencas: number;
+  secretos: number;
+}
+
+export interface AlignmentVote {
+  votacao_id: number;
+  data_hora: string;
+  voto: "SIM" | "NAO";
+  maioria: "SIM" | "NAO";
+  alinhado: boolean;
+  materia_id: number | null;
+  materia_identificacao: string | null;
+  descricao: string;
+}
+
+export interface AlignmentGroup {
+  referencia: "campo" | "partido" | "bloco";
+  alinhados: number;
+  desalinhados: number;
+  total: number;
+  votos: AlignmentVote[];
+}
+
+export interface ActivityItem {
+  codigo: string;
+  data: string | null;
+  url: string | null;
+  identificacao?: string | null;
+  ementa?: string | null;
+  resumo?: string | null;
+}
+
+export interface LegislativeActivity {
+  data_ref: string;
+  periodo_inicio: string | null;
+  autorias_total: number;
+  projetos_autoria: number;
+  autorias_principais: number;
+  relatorias: number;
+  discursos: number;
+  apartes: number;
+  comissoes_ativas: number;
+  autorias_recentes: ActivityItem[];
+  relatorias_recentes: ActivityItem[];
+  discursos_recentes: ActivityItem[];
+  comissoes: Array<{ sigla: string | null; nome: string | null; participacao: string | null; inicio: string | null }>;
 }
 
 export interface Matter {

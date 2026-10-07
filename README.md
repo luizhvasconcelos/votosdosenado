@@ -45,7 +45,7 @@ O workflow `Atualização de dados` agenda uma carga diária e cargas horárias 
 ```bash
 make setup       # instala Python e Node
 make db-up       # inicia PostgreSQL
-make ingest      # carrega Senado e recalcula índices
+make ingest      # carrega Senado, atividade parlamentar e recalcula índices
 make ingest-elections # resultados TSE de 2018, 2022 e 2026 + fotos dos eleitos
 make test        # testes das duas aplicações
 make lint        # Ruff + ESLint

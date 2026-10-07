@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+from .activity import ingest_legislative_activities
 from .database import Base, SessionLocal, engine
 from .ingestion import ingest_affiliations, ingest_senators, ingest_votes
 from .metrics import refresh_snapshots
@@ -14,6 +15,7 @@ def main() -> None:
     ingest.add_argument("--senators", action="store_true")
     ingest.add_argument("--votes", action="store_true")
     ingest.add_argument("--profiles", action="store_true")
+    ingest.add_argument("--activities", action="store_true")
     subparsers.add_parser("metrics")
     elections = subparsers.add_parser("elections")
     elections.add_argument("--years", nargs="+", type=int, default=[2018, 2022, 2026])
@@ -22,7 +24,9 @@ def main() -> None:
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as session:
         if args.command == "ingest":
-            do_all = not args.senators and not args.votes and not args.profiles
+            do_all = (
+                not args.senators and not args.votes and not args.profiles and not args.activities
+            )
             if args.senators or do_all:
                 print(f"Senadores importados: {ingest_senators(session)}")
             if args.votes or do_all:
@@ -30,6 +34,8 @@ def main() -> None:
                 print(f"Votações importadas: {votings}; votos: {votes}")
             if args.profiles or do_all:
                 print(f"Filiações importadas: {ingest_affiliations(session)}")
+            if args.activities or do_all:
+                print(f"Perfis de atividade importados: {ingest_legislative_activities(session)}")
             print(f"Índices atualizados: {refresh_snapshots(session)}")
         elif args.command == "metrics":
             print(f"Índices atualizados: {refresh_snapshots(session)}")

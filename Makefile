@@ -12,7 +12,7 @@ db-down:
 	docker compose down
 
 ingest:
-	cd apps/api && ../../.venv/bin/python -m app.cli ingest --senators --votes --profiles
+	cd apps/api && ../../.venv/bin/python -m app.cli ingest --senators --votes --profiles --activities
 
 ingest-elections:
 	cd apps/api && ../../.venv/bin/python -m app.cli elections --years 2018 2022 2026 --photos-dir ../web/public/candidatos

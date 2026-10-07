@@ -3,6 +3,7 @@ from sqlalchemy import desc, func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from .database import get_db
+from .metrics import senator_alignment_details, senator_vote_summary
 from .models import ElectionResult, Matter, Senator, Vote, Voting
 from .schemas import (
     MatterDetail,
@@ -59,16 +60,20 @@ def senators(
 def senators_by_composition(year: int, db: Session = Depends(get_db)):
     if year != 2027:
         raise HTTPException(404, "Composição não disponível")
-    return db.scalars(
-        select(Senator)
-        .join(ElectionResult)
-        .options(selectinload(Senator.eleicoes))
-        .where(
-            ElectionResult.ano.in_((2022, 2026)),
-            ElectionResult.eleito.is_(True),
+    return (
+        db.scalars(
+            select(Senator)
+            .join(ElectionResult)
+            .options(selectinload(Senator.eleicoes))
+            .where(
+                ElectionResult.ano.in_((2022, 2026)),
+                ElectionResult.eleito.is_(True),
+            )
+            .order_by(Senator.uf, Senator.nome_parlamentar)
         )
-        .order_by(Senator.uf, Senator.nome_parlamentar)
-    ).unique().all()
+        .unique()
+        .all()
+    )
 
 
 @router.get("/senadores/{senator_id}", response_model=SenatorDetail)
@@ -80,6 +85,7 @@ def senator_detail(senator_id: int, db: Session = Depends(get_db)):
             selectinload(Senator.mandatos),
             selectinload(Senator.filiacoes),
             selectinload(Senator.eleicoes),
+            selectinload(Senator.atividade),
         )
         .where(Senator.id == senator_id)
     )
@@ -98,6 +104,11 @@ def senator_detail(senator_id: int, db: Session = Depends(get_db)):
     ).all()
     payload = SenatorDetail.model_validate(senator).model_dump()
     payload["indices"] = list(latest_by_type.values())
+    payload["participacao"] = senator_vote_summary(db, senator.id)
+    payload["alinhamentos"] = [
+        senator_alignment_details(db, senator, reference)
+        for reference in ("campo", "partido", "bloco")
+    ]
     payload["votos_recentes"] = [
         {
             "id": voting.id,
