@@ -202,6 +202,10 @@ def _upsert_election_result(
             senators.append(senator)
     if senator is None:
         return False
+    if elected and year >= 2026:
+        party = str(candidate.get("party") or senator.partido_sigla or "SEM PARTIDO")
+        senator.partido_sigla = party
+        senator.espectro_partido = spectrum_for_party(party)
     if elected and not senator.foto_url:
         senator.foto_url = f"/candidatos/{year}/{candidate_id}.jpg"
     row = session.scalar(

@@ -1,5 +1,6 @@
 import unicodedata
 from collections import Counter, defaultdict
+from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import desc, func, or_, select
@@ -323,11 +324,16 @@ def senators_by_composition(year: int, db: Session = Depends(get_db)):
     return (
         db.scalars(
             select(Senator)
-            .join(ElectionResult)
+            .outerjoin(ElectionResult)
             .options(selectinload(Senator.eleicoes))
             .where(
-                ElectionResult.ano.in_((2022, 2026)),
-                ElectionResult.eleito.is_(True),
+                or_(
+                    # Nas 27 cadeiras renovadas em 2022, mostra quem ocupa de
+                    # fato o mandato até 2031 — inclusive sucessores de quem
+                    # renunciou — e não apenas o titular originalmente eleito.
+                    (Senator.ativo.is_(True) & (Senator.mandato_fim >= date(2031, 1, 1))),
+                    ((ElectionResult.ano == 2026) & ElectionResult.eleito.is_(True)),
+                )
             )
             .order_by(Senator.uf, Senator.nome_parlamentar)
         )

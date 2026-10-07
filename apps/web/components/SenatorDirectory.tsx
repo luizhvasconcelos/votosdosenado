@@ -69,7 +69,7 @@ export function SenatorDirectory({ current, future }: { current: Senator[]; futu
       <button type="button" role="tab" aria-selected={composition === "2027"} onClick={() => changeComposition("2027")}>Composição 2027 <span>{future.length}</span></button>
       <button type="button" role="tab" aria-selected={composition === "trocas"} onClick={() => changeComposition("trocas")}>Quem sai e entra <span>{incoming.length}</span></button>
     </div>
-    {composition === "2027" && <p className="directory-context"><strong>Posse em 2027.</strong> Esta visão combina os 27 eleitos em 2022 com os 54 eleitos em 2026. Alterações judiciais e suplências posteriores podem mudar a composição.</p>}
+    {composition === "2027" && <p className="directory-context"><strong>Posse em 2027.</strong> Esta visão combina os 27 ocupantes dos mandatos que seguem até 2031 com os 54 eleitos em 2026. Renúncias já efetivadas são refletidas; alterações judiciais e suplências posteriores ainda podem mudar a composição.</p>}
     {composition === "trocas" && <>
       <p className="directory-context"><strong>{outgoing.length} {outgoing.length === 1 ? "troca projetada" : "trocas projetadas"}.</strong> A comparação considera quem está em exercício hoje e os titulares eleitos para a legislatura iniciada em 2027. Licenças, decisões judiciais e convocações de suplentes podem alterar a ocupação efetiva.</p>
       <div className="transition-summary" aria-label="Resumo das mudanças"><div><strong>{outgoing.length}</strong><span>deixam a composição</span></div><ArrowRight aria-hidden="true" /><div><strong>{incoming.length}</strong><span>entram na composição</span></div></div>

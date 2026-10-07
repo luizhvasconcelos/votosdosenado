@@ -36,6 +36,8 @@ export default function MethodologyPage() {
 
     <h2>Espectro político</h2>
     <p>A primeira classificação vem do partido. Após histórico suficiente, uma classificação comportamental pode ser calculada e exibida lado a lado. Ela não apaga o rótulo partidário.</p>
+    <p>No recorte partidário atual, PL, Novo, Republicanos, PP, PRD e União Brasil são agrupados à direita; PSD, MDB, Podemos, PSDB e Cidadania, ao centro; PT, PSB, PDT, PV, PCdoB, Rede e PSOL, à esquerda. Trata-se de uma classificação editorial ampla — não de um dado oficial do Senado — e mudanças partidárias podem alterar os totais.</p>
+    <p>A composição de 2027 usa os ocupantes efetivos das 27 cadeiras com mandato até 2031, incluindo sucessores após renúncia, e soma os 54 eleitos em 2026. Assim, um ex-senador não permanece na projeção apenas por ter vencido a eleição original da chapa.</p>
 
     <h2>Classificação por temas</h2>
     <p>A associação inicial procura termos públicos e reproduzíveis na ementa oficial de cada matéria. Uma mesma matéria pode aparecer em mais de um tema. A indicação “classificação automática” permanece visível para não confundir essa associação com um assunto oficial atribuído pelo Senado ou com revisão editorial.</p>

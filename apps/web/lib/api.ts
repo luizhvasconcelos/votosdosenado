@@ -16,7 +16,7 @@ async function api<T>(path: string, fallback: T, revalidate = 300): Promise<T> {
 }
 
 export const getSenators = () => api<Senator[]>("/senadores", []);
-export const getFutureSenators = () => api<Senator[]>("/senadores/composicao/2027", []);
+export const getFutureSenators = () => api<Senator[]>("/senadores/composicao/2027", [], 0);
 export const getSenator = (id: string) => api<Senator | null>(`/senadores/${id}`, null, 0);
 export const getVotings = (limit = 30, query = "") => {
   const params = new URLSearchParams({ limit: String(limit) });
