@@ -124,3 +124,55 @@ def test_theme_classification_and_aggregate_endpoint():
             }
     finally:
         app.dependency_overrides.clear()
+
+
+def test_voting_search_uses_description_and_matter_fields():
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        health = Matter(
+            codigo_senado="M-health",
+            sigla_tipo="PL",
+            numero="42",
+            ano=2026,
+            ementa="Amplia a atenção à saúde pública.",
+        )
+        health.votacoes.append(
+            Voting(
+                codigo_senado="V-health",
+                data_hora=datetime(2026, 2, 1),
+                descricao="Votação do substitutivo",
+                tipo="nominal",
+            )
+        )
+        session.add_all(
+            [
+                health,
+                Voting(
+                    codigo_senado="V-education",
+                    data_hora=datetime(2026, 1, 1),
+                    descricao="Programa nacional de educação",
+                    tipo="nominal",
+                ),
+            ]
+        )
+        session.commit()
+
+    def override_db():
+        with Session(engine) as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        with TestClient(app) as client:
+            by_description = client.get("/api/v1/votacoes?busca=educacao").json()
+            assert [voting["codigo_senado"] for voting in by_description] == ["V-education"]
+
+            by_matter = client.get("/api/v1/votacoes?busca=PL%2042%20saude").json()
+            assert [voting["codigo_senado"] for voting in by_matter] == ["V-health"]
+    finally:
+        app.dependency_overrides.clear()

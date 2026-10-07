@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { LayerBadge } from "@/components/LayerBadge";
+import { ThemeMatterExplorer } from "@/components/ThemeMatterExplorer";
 import { getTheme } from "@/lib/api";
 import { notFound } from "next/navigation";
 
@@ -30,10 +31,7 @@ export default async function ThemePage({ params }: { params: Promise<{ slug: st
       </div> : <p className="empty-inline">Ainda não há votos individuais suficientes para montar o gráfico deste tema.</p>}
     </section>
     <section className="theme-matters"><div className="section-heading"><div><LayerBadge type="fato" /><h2>Matérias e votações relacionadas</h2><p>Abra uma matéria ou votação para consultar o texto e a lista nominal.</p></div></div>
-      <div className="theme-matter-list">{theme.materias_relacionadas.map(matter => <article key={matter.id}>
-        <div className="theme-matter-copy"><div><span>{matter.sigla_tipo} {matter.numero}/{matter.ano}</span><small>Classificação {matter.origem_tema}</small></div><h3><Link href={`/materias/${matter.id}`}>{matter.ementa || "Ementa não informada"}</Link></h3></div>
-        {matter.votacoes.length ? <div className="theme-voting-links">{matter.votacoes.map(voting => <Link href={`/votacoes/${voting.id}`} key={voting.id}><span>{new Date(voting.data_hora).toLocaleDateString("pt-BR")}</span><strong>{voting.total_sim} Sim · {voting.total_nao} Não · {voting.total_abst} Abst.</strong><ArrowRight aria-hidden="true" /></Link>)}</div> : <p className="empty-inline">Sem votação nominal relacionada.</p>}
-      </article>)}</div>
+      <ThemeMatterExplorer matters={theme.materias_relacionadas} />
     </section>
   </div>;
 }

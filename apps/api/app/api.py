@@ -1,3 +1,4 @@
+import unicodedata
 from collections import Counter, defaultdict
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -33,6 +34,16 @@ from .schemas import (
 from .themes import THEME_DEFINITIONS, theme_summary
 
 router = APIRouter(prefix="/api/v1")
+
+
+def _normalize_search(value: str | None) -> str:
+    if not value:
+        return ""
+    return "".join(
+        character
+        for character in unicodedata.normalize("NFD", value.casefold())
+        if unicodedata.category(character) != "Mn"
+    )
 
 
 def _ensure_target(db: Session, target_type: str, target_id: int) -> None:
@@ -378,13 +389,44 @@ def senator_detail(senator_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/votacoes", response_model=list[VotingSummary])
-def votings(limit: int = Query(30, ge=1, le=200), db: Session = Depends(get_db)):
-    return db.scalars(
+def votings(
+    limit: int = Query(30, ge=1, le=200),
+    busca: str | None = Query(None, max_length=120),
+    db: Session = Depends(get_db),
+):
+    query = (
         select(Voting)
+        .outerjoin(Matter, Voting.materia_id == Matter.id)
         .options(selectinload(Voting.materia))
         .order_by(desc(Voting.data_hora))
-        .limit(limit)
-    ).all()
+    )
+    if not busca or not busca.strip():
+        return db.scalars(query.limit(limit)).unique().all()
+
+    terms = _normalize_search(busca).split()
+    results = db.scalars(query).unique().all()
+    return [
+        voting
+        for voting in results
+        if all(
+            term
+            in _normalize_search(
+                " ".join(
+                    filter(
+                        None,
+                        [
+                            voting.descricao,
+                            voting.resultado,
+                            voting.materia.ementa if voting.materia else None,
+                            voting.materia.sigla_tipo if voting.materia else None,
+                            voting.materia.numero if voting.materia else None,
+                        ],
+                    )
+                )
+            )
+            for term in terms
+        )
+    ][:limit]
 
 
 @router.get("/votacoes/{voting_id}", response_model=VotingDetail)
