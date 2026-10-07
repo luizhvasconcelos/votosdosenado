@@ -5,8 +5,8 @@ from .activity import ingest_legislative_activities
 from .database import Base, SessionLocal, engine
 from .ingestion import ingest_affiliations, ingest_senators, ingest_votes
 from .metrics import refresh_snapshots
-from .tse import ingest_tse_elections, sync_tse_elected_photos
 from .themes import sync_themes
+from .tse import ingest_tse_elections, sync_tse_elected_photos
 
 
 def main() -> None:
